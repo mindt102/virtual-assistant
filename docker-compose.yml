@@ -1,0 +1,19 @@
+version: "3.7"
+
+services:
+  bioz:
+    container_name: bioz
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - PUID=1000
+        - PGID=1000
+        - USER=dockeruser
+    env_file:
+      - .env
+    user: dockeruser
+    volumes:
+      - ./logs:/logs
+      - ./secrets:/secrets
+    restart: always

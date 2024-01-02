@@ -1,0 +1,14 @@
+**/__pycache__/
+secrets/
+venv/
+.env
+*.log
+.dockerignore
+.gitignore
+.git
+.github
+Dockerfile
+docker-compose.yml
+assets/
+README.md
+test.py

@@ -1,0 +1,8 @@
+**/__pycache__/
+venv/
+.env
+secrets/
+logs/
+clientLibraryConfig-auth0.json
+launch.sh
+test.py
