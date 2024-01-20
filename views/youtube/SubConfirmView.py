@@ -14,16 +14,16 @@ class SubConfirmView(View):
     @discord.ui.button(label="Subscribe", style=discord.ButtonStyle.green)
     async def subscribe_handler(self, interaction: discord.Interaction, button: discord.ui.Button):
         try:
+            await interaction.response.defer()
             title = request_channelTitle_by_id(self.channel_id)
             if not title:
-                await interaction.response.send_message("Channel not found", ephemeral=True, delete_after=5)
+                res = await interaction.followup.send("Channel not found", ephemeral=True, wait=True)
             else:
                 channel = {
                     "_id": self.channel_id,
                     "title": title
                 }
                 self.logger.info(f"Subscribing to {channel}")
-                await interaction.response.defer()
                 await subscribe(channel=channel)
                 res = await interaction.followup.send(f"Subscribed to {channel['title']}", ephemeral=True, wait=True)
         except ValueError:

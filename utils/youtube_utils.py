@@ -1,6 +1,5 @@
 import asyncio
 import aiohttp
-import random
 from bs4 import BeautifulSoup
 import re
 import discord
@@ -33,19 +32,14 @@ def youtube_parser(content: str) -> str:
             "title": entry.title.text,
         }
 
-        with build("youtube", "v3", credentials=get_googleapi_credentials()) as youtube:
-            request = youtube.videos().list(
-                part=["contentDetails", "snippet"],
-                id=video["_id"],
-            )
-            response = request.execute()
-            if not response["items"]:
-                logger.critical(f"Received invalid response: {response}")
-                return None
-            video["duration"] = response["items"][0]["contentDetails"]["duration"]
+        response = request_video_by_id(video["_id"])
+        if not response:
+            return None
+        
+        video["duration"] = response["contentDetails"]["duration"]
 
         published_time = datetime.fromisoformat(
-            response["items"][0]["snippet"]["publishedAt"])
+            response["snippet"]["publishedAt"])
         published_timedelta = datetime.now(
             timezone.utc) - published_time
         if published_timedelta > timedelta(days=VIDEO_AGE_LIMIT):
@@ -130,50 +124,50 @@ async def queue_handler(channel: discord.TextChannel, video: dict):
         unexpected_error_handler(logger, e, video=video, channel=channel.name)
 
 
-async def random_videoId_from_playlistId(playlistId: str) -> str:
-    try:
-        # Get the number of items in the playlist
-        with build("youtube", "v3", credentials=get_googleapi_credentials()) as youtube:
-            request = youtube.playlists().list(
-                part="contentDetails",
-                id=playlistId,
-                maxResults=1
-            )
+# async def random_videoId_from_playlistId(playlistId: str) -> str:
+#     try:
+#         # Get the number of items in the playlist
+#         with build("youtube", "v3", credentials=get_googleapi_credentials()) as youtube:
+#             request = youtube.playlists().list(
+#                 part="contentDetails",
+#                 id=playlistId,
+#                 maxResults=1
+#             )
 
-            response = request.execute()
-            item_count = response["items"][0]["contentDetails"]["itemCount"]
+#             response = request.execute()
+#             item_count = response["items"][0]["contentDetails"]["itemCount"]
 
-        random_index: int = random.randint(0, item_count - 1)
-        page_token: str = ''
-        for _ in range((random_index // 50) + 1):
-            response = await request_videos_by_playlistId(playlistId, page_token=page_token)
-            if "nextPageToken" not in response:
-                break
-            page_token = response["nextPageToken"]
-        videoId = response["items"][random_index %
-                                    50]["contentDetails"]["videoId"]
-        return videoId
-    except Exception as e:
-        unexpected_error_handler(
-            logger, e, playlistId=playlistId, response=response, random_index=random_index)
-        return None
+#         random_index: int = random.randint(0, item_count - 1)
+#         page_token: str = ''
+#         for _ in range((random_index // 50) + 1):
+#             response = await request_videos_by_playlistId(playlistId, page_token=page_token)
+#             if "nextPageToken" not in response:
+#                 break
+#             page_token = response["nextPageToken"]
+#         videoId = response["items"][random_index %
+#                                     50]["contentDetails"]["videoId"]
+#         return videoId
+#     except Exception as e:
+#         unexpected_error_handler(
+#             logger, e, playlistId=playlistId, response=response, random_index=random_index)
+#         return None
 
 
-async def request_videos_by_playlistId(playlistId: str, part: str = "contentDetails", max_results: int = 50, page_token: str = '') -> dict[str, str]:
-    try:
-        with build("youtube", "v3", credentials=get_googleapi_credentials()) as youtube:
-            request = youtube.playlistItems().list(
-                part=part,
-                playlistId=playlistId,
-                maxResults=max_results,
-                pageToken=page_token
-            )
+# async def request_videos_by_playlistId(playlistId: str, part: str = "contentDetails", max_results: int = 50, page_token: str = '') -> dict[str, str]:
+#     try:
+#         with build("youtube", "v3", credentials=get_googleapi_credentials()) as youtube:
+#             request = youtube.playlistItems().list(
+#                 part=part,
+#                 playlistId=playlistId,
+#                 maxResults=max_results,
+#                 pageToken=page_token
+#             )
 
-            response = request.execute()
-            return response
-    except Exception as e:
-        unexpected_error_handler(logger, e, playlistId=playlistId)
-        return None
+#             response = request.execute()
+#             return response
+#     except Exception as e:
+#         unexpected_error_handler(logger, e, playlistId=playlistId)
+#         return None
 
 
 async def resubscribe():
@@ -228,6 +222,9 @@ async def toggle_subscription(channel_id: str, mode: str) -> int:
 def channelId_to_url(channel_id: str) -> str:
     return f"https://www.youtube.com/channel/{channel_id}"
 
+# def playlistId_to_url(playlist_id: str) -> str:
+#     return f"https://www.youtube.com/playlist?list={playlist_id}"
+
 
 def channelUrl_to_id(channel_url: str) -> str:
     return channel_url.split("/")[-1]
@@ -241,16 +238,20 @@ def videoUrl_to_id(video_url: str) -> str:
     return video_url.split("=")[-1]
 
 
-def request_video_by_id(video_id: str) -> dict[str, str]:
+def request_video_by_id(video_id: str, part: list=["contentDetails", "snippet"]) -> dict[str, str]:
     video = None
     try:
         with build("youtube", "v3", credentials=get_googleapi_credentials()) as youtube:
             request = youtube.videos().list(
-                part="snippet",
+                part=part,
                 id=video_id
             )
             response = request.execute()
-        video = response["items"][0]
+
+        if not response["items"]:
+            logger.critical(f"Received invalid response: {response}")
+        else:
+            video = response["items"][0]
     except KeyError:
         logger.info(f"video_id: {video_id}, response: {response}")
     except Exception as e:
@@ -275,6 +276,24 @@ def request_channelTitle_by_id(channel_id: str) -> str:
         unexpected_error_handler(logger, e)
     finally:
         return title
+
+
+# def request_playlistTitle_by_id(playlist_id: str) -> str:
+#     title = None
+#     try:
+#         with build("youtube", "v3", credentials=get_googleapi_credentials()) as youtube:
+#             request = youtube.playlists().list(
+#                 part="snippet",
+#                 id=playlist_id
+#             )
+#             response = request.execute()
+#         title = response["items"][0]["snippet"]["title"]
+#     except KeyError:
+#         logger.info(response)
+#     except Exception as e:
+#         unexpected_error_handler(logger, e)
+#     finally:
+#         return title
 
 
 def request_videos_by_channelId(channel_id: str) -> list[dict[str, str]]:

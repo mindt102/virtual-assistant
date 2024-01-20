@@ -3,7 +3,7 @@ from discord.ext import commands
 from utils.logging_utils import setup_logger
 from utils.logging_utils import unexpected_error_handler
 
-extensions = ["cogs.UtilsCogs", "cogs.YoutubeCogs", "cogs.ChessCogs"]
+extensions = ["cogs.UtilsCogs", "cogs.YoutubeCogs", "cogs.ChessCogs", "cogs.FrenchCogs"]
 
 
 class Bioz(commands.Bot):

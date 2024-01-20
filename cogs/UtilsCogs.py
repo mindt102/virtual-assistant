@@ -2,6 +2,7 @@ import asyncio
 import aiohttp
 from discord.ext import commands, tasks
 import discord
+from utils import french_utils
 from utils.logging_utils import setup_logger
 from utils.logging_utils import unexpected_error_handler
 from config import BOT_QUEUE, CALLBACK_URL, FEEDBACK_TIMEOUT, EASYFRENCH_PLAYLISTID
@@ -34,7 +35,7 @@ class UtilsCogs(commands.Cog):
         while his_len > 0:
             await ctx.send("Deleting messages...", delete_after=FEEDBACK_TIMEOUT)
             await ctx.message.channel.purge()
-            await asyncio.sleep(1)
+            await asyncio.sleep(2)
             try:
                 his_len = len(await ctx.channel.history().flatten())
             except AttributeError as e:
@@ -45,7 +46,7 @@ class UtilsCogs(commands.Cog):
         brief="Send a random video from Easy French"
     )
     async def ezfrench(self, ctx: commands.Context = None):
-        video_id = await youtube_utils.random_videoId_from_playlistId(playlistId=EASYFRENCH_PLAYLISTID)
+        video_id = await french_utils.random_videoId_from_playlistId(playlistId=EASYFRENCH_PLAYLISTID)
 
         if not ctx:
             channel = discord.utils.get(
