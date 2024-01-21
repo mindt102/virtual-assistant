@@ -2,7 +2,13 @@ version: "3.7"
 
 services:
   reverse_proxy:
-    image: ./proxy.Dockerfile
+    build: 
+      context: .
+      dockerfile: ./proxy.Dockerfile
+      args:
+        - PUID=1000
+        - PGID=1000
+        - USER=proxyuser
     container_name: reverse_proxy
     ports:
       - "80:80"
