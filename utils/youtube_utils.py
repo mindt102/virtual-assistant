@@ -72,6 +72,7 @@ def youtube_parser(content: str) -> str:
         return None
 
 def check_short(duration_str: str) -> bool:
+    """Return True if the video is less than 2 minutes long"""
     if "H" in duration_str or "D" in duration_str:
         return False
 
@@ -84,6 +85,7 @@ def check_short(duration_str: str) -> bool:
 
 
 def check_keywords(title: str, keywords: list[str]) -> bool:
+    """Return True if any of the keywords are in the title"""
     return any(keyword in title for keyword in keywords)
 
 
@@ -263,12 +265,13 @@ def find_missing_videos():
     channels = get_channels(limit=0)
 
     # Get RFC 3339 timestamp of 24 hours ago
-    yesterday = datetime.now(timezone.utc) - timedelta(days=1)
+    yesterday = datetime.now(timezone.utc) - timedelta(days=2)
     yesterday = yesterday.isoformat(timespec='seconds')
 
     with build("youtube", "v3", credentials=get_googleapi_credentials()) as youtube:
         for channel in channels:
             channel_id = channel["_id"]
+            channel_title = channel["title"]
 
             # Get videos published in the last 24 hours
             request = youtube.search().list(
@@ -283,10 +286,17 @@ def find_missing_videos():
             # Check if any of the videos are missing from the database
             for item in response["items"]:
                 video_id = item["id"]["videoId"]
+                title = item["snippet"]["title"]
                 if get_video_by_id(video_id):
                     continue
+                has_keywords = "keywords" in channel and channel["keywords"]
+                if has_keywords:
+                    if not check_keywords(title, channel["keywords"]):
+                        logger.info(f"Missing video does not match keywords: {title} - {channel_title}")
+                        continue
 
-                logger.info(f"Missing video: {video_id}")
+
+                logger.info(f"Missing video: {title} - {channel_title}")
 
                 # Request video duration
                 vid_request = youtube.videos().list(
@@ -299,6 +309,12 @@ def find_missing_videos():
                     continue
                 duration = vid_response["items"][0]["contentDetails"]["duration"]
             
+                if has_keywords and "$SHORT" in channel["keywords"]:
+                    if not check_short(video["duration"]):
+                        logger.info(f"Missing video is too long: {title} - {channel_title}")
+                        return None
+
+
                 video = {
                     "_id": video_id,
                     "channelId": channel_id,
