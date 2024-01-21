@@ -261,7 +261,7 @@ def request_videos_by_channelId(channel_id: str) -> list[dict[str, str]]:
         return videos
 
 
-def find_missing_videos():
+async def find_missing_videos():
     channels = get_channels(limit=0)
 
     # Get RFC 3339 timestamp of 24 hours ago
@@ -272,6 +272,7 @@ def find_missing_videos():
         for channel in channels:
             channel_id = channel["_id"]
             channel_title = channel["title"]
+            logger.info(f"Checking {channel_title}...")
 
             # Get videos published in the last 24 hours
             request = youtube.search().list(

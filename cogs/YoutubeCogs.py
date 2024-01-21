@@ -114,7 +114,7 @@ class YoutubeCogs(commands.Cog):
         try:
             self.logger.info("Finding missing videos...")
             await ctx.send("Finding missing videos...", ephemeral=True, delete_after=FEEDBACK_TIMEOUT)
-            find_missing_videos()
+            await find_missing_videos()
             await ctx.send("Finished finding missing videos", ephemeral=True, delete_after=FEEDBACK_TIMEOUT)
         except Exception as e:
             await ctx.send("Server error", delete_after=FEEDBACK_TIMEOUT, ephemeral=True)
