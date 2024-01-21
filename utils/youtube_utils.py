@@ -283,20 +283,22 @@ def find_missing_videos():
             # Check if any of the videos are missing from the database
             for item in response["items"]:
                 video_id = item["id"]["videoId"]
-                if not get_video_by_id(video_id):
-                    logger.info(f"Missing video: {video_id}")
-                    
-                    # Request video details
-                    vid_request = youtube.videos().list(
-                        part="contentDetails",
-                        id=video_id
-                    )
-                    vid_response = request.execute
-                    if not vid_response["items"]:
-                        logger.critical(f"Received invalid response: {vid_response}")
-                        continue
-                    duration = vid_response["items"][0]["contentDetails"]["duration"]
-                
+                if get_video_by_id(video_id):
+                    continue
+
+                logger.info(f"Missing video: {video_id}")
+
+                # Request video duration
+                vid_request = youtube.videos().list(
+                    part="contentDetails",
+                    id=video_id
+                )
+                vid_response = vid_request.execute()
+                if not vid_response["items"]:
+                    logger.critical(f"Received invalid response: {vid_response}")
+                    continue
+                duration = vid_response["items"][0]["contentDetails"]["duration"]
+            
                 video = {
                     "_id": video_id,
                     "channelId": channel_id,
