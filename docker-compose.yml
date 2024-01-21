@@ -3,8 +3,8 @@ version: "3.7"
 services:
   reverse_proxy:
     build: 
-      context: .
-      dockerfile: ./proxy.Dockerfile
+      context: proxy/
+      dockerfile: Dockerfile
       args:
         - PUID=1000
         - PGID=1000
