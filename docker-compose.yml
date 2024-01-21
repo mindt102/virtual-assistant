@@ -17,3 +17,8 @@ services:
       - ./logs:/logs
       - ./secrets:/secrets
     restart: always
+
+networks:
+  default:
+    name: nginxproxymanager_default
+    external: true

@@ -3,8 +3,6 @@ import logging
 import traceback
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 
-import discord
-
 from config import LOG_FILE
 
 
@@ -16,6 +14,8 @@ def setup_logger(logger_name: str) -> logging.Logger:
     - Log warning level to stream
     :return logger: An object of type Logger with the name of logger_name
     """
+    noop = logging.NullHandler()
+    logging.getLogger().addHandler(noop)
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.INFO)
 
