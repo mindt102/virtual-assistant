@@ -83,26 +83,24 @@ class UtilsCogs(commands.Cog):
 
     @ tasks.loop(hours=1)
     async def webhook_check(self):
+        channel = discord.utils.get(
+            self.bot.get_all_channels(),
+            guild__name='Bot',
+            name='debug'
+        )
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(CALLBACK_URL) as resp:
                     if resp.status != 200:
                         self.logger.critical(
                             f"Webhook callback returned {resp.status}")
-                        channel = discord.utils.get(
-                            self.bot.get_all_channels(),
-                            guild__name='Bot',
-                            name='debug'
-                        )
                         await channel.send(f"Webhook callback returned {resp.status}")
                     else:
                         self.logger.info("Webhook callback returned 200")
+        except aiohttp.client_exceptions.ClientConnectorError as e:
+            await channel.send(f"Cannot connect to webhook callback")
+            unexpected_error_handler(self.logger, e)
         except Exception as e:
-            channel = discord.utils.get(
-                            self.bot.get_all_channels(),
-                            guild__name='Bot',
-                            name='debug'
-                        )
             await channel.send(f"Webhook callback check errored")
             unexpected_error_handler(self.logger, e)
 
