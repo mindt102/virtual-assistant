@@ -107,6 +107,20 @@ class YoutubeCogs(commands.Cog):
             await res.delete(delay=FEEDBACK_TIMEOUT)
 
     @youtube.command(
+        description="Find missing videos",
+        brief="Find missing videos due to server issues"
+    )
+    async def missing(self, ctx: commands.Context):
+        try:
+            self.logger.info("Finding missing videos...")
+            await ctx.send("Finding missing videos...", ephemeral=True, delete_after=FEEDBACK_TIMEOUT)
+
+            await ctx.send("Finished finding missing videos", ephemeral=True, delete_after=FEEDBACK_TIMEOUT)
+        except Exception as e:
+            await ctx.send("Server error", delete_after=FEEDBACK_TIMEOUT, ephemeral=True)
+            unexpected_error_handler(self.logger, e)
+
+    @youtube.command(
         description="Resubscribe",
         brief="Manually unsubscribe and subscribe to all channels"
     )

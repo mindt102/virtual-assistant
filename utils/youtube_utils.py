@@ -88,6 +88,9 @@ def check_keywords(title: str, keywords: list[str]) -> bool:
 
 
 def hook_handler(data):
+    """
+    Parse the data from the Youtube webhook and add it to the queue
+    """
     try:
         video = youtube_parser(data)
         if not video:
@@ -113,6 +116,9 @@ def duration_to_str(duration: str) -> str:
 
 
 async def queue_handler(channel: discord.TextChannel, video: dict):
+    """
+    Add a video to the database and send it to the channel
+    """
     try:
         if add_video(video):
 
@@ -251,3 +257,56 @@ def request_videos_by_channelId(channel_id: str) -> list[dict[str, str]]:
         unexpected_error_handler(logger, e)
     finally:
         return videos
+
+
+def find_missing_videos():
+    channels = get_channels(limit=0)
+
+    # Get RFC 3339 timestamp of 24 hours ago
+    yesterday = datetime.now(timezone.utc) - timedelta(days=1)
+    yesterday = yesterday.isoformat(timespec='seconds')
+
+    with build("youtube", "v3", credentials=get_googleapi_credentials()) as youtube:
+        for channel in channels:
+            channel_id = channel["_id"]
+
+            # Get videos published in the last 24 hours
+            request = youtube.search().list(
+                part="snippet",
+                channelId=channel_id,
+                order="date",
+                publishedAfter=yesterday,
+                type="video"
+            )
+            response = request.execute()
+
+            # Check if any of the videos are missing from the database
+            for item in response["items"]:
+                video_id = item["id"]["videoId"]
+                if not get_video_by_id(video_id):
+                    logger.info(f"Missing video: {video_id}")
+                    
+                    # Request video details
+                    vid_request = youtube.videos().list(
+                        part="contentDetails",
+                        id=video_id
+                    )
+                    vid_response = request.execute
+                    if not vid_response["items"]:
+                        logger.critical(f"Received invalid response: {vid_response}")
+                        continue
+                    duration = vid_response["items"][0]["contentDetails"]["duration"]
+                
+                video = {
+                    "_id": video_id,
+                    "channelId": channel_id,
+                    "title": item["snippet"]["title"],
+                    "duration": duration,
+                }
+
+                # Add video to the queue
+                msg = {
+                    'type': 'youtube',
+                    'data': video,
+                }
+                BOT_QUEUE.put(msg)
