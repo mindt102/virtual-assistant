@@ -98,6 +98,11 @@ class UtilsCogs(commands.Cog):
                     else:
                         self.logger.info("Webhook callback returned 200")
         except Exception as e:
+            channel = discord.utils.get(
+                            self.bot.get_all_channels(),
+                            guild__name='Bot',
+                            name='debug'
+                        )
             await channel.send(f"Webhook callback check errored")
             unexpected_error_handler(self.logger, e)
 
