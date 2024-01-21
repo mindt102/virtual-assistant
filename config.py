@@ -7,7 +7,7 @@ load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 BOT_QUEUE = queue.Queue()
 
-LOG_FILE = "logs/runtime.log"
+LOG_FILE = "logs/bioz/runtime.log"
 CALLBACK_URL = os.getenv("CALLBACK_URL")
 
 SECRET_PATH = "secrets/"

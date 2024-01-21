@@ -1,10 +1,13 @@
 from flask import Flask, request
 from utils.youtube_utils import hook_handler
 from utils.logging_utils import setup_logger, unexpected_error_handler
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 logger = setup_logger(__name__)
 app = Flask(__name__)
-
+app.wsgi_app = ProxyFix(
+    app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
+)
 
 @app.route('/')
 def index():

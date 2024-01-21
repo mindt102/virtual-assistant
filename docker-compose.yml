@@ -1,6 +1,14 @@
 version: "3.7"
 
 services:
+  reverse_proxy:
+    image: nginx:latest
+    container_name: reverse_proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./secrets/conf.d:/etc/nginx/conf.d
+      - ./logs/nginx:/var/log/nginx
   bioz:
     container_name: bioz
     build:
@@ -14,11 +22,6 @@ services:
       - .env
     user: dockeruser
     volumes:
-      - ./logs:/logs
+      - ./logs/bioz:/logs/bioz
       - ./secrets:/secrets
     restart: always
-
-networks:
-  default:
-    name: nginxproxymanager_default
-    external: true
