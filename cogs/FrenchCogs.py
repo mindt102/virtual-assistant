@@ -44,11 +44,11 @@ class FrenchCogs(commands.Cog):
                     name='french'
                 )
             else:
-                channel = ctx.channel
+                channel = ctx
 
             await channel.send(
-                content=f"Time to learn French: {youtube_utils.videoId_to_url(video['_id'])}",
-                view=FrenchView(video_id=video["_id"], no_db_log=True)
+                content=f"Daily French ({youtube_utils.duration_to_str(video['duration'])}): {youtube_utils.videoId_to_url(video['_id'])}",
+                view=FrenchView(video_id=video["_id"])
             )
         except Exception as e:
             await ctx.send("Server error", delete_after=FEEDBACK_TIMEOUT, ephemeral=True)

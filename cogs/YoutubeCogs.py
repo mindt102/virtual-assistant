@@ -124,6 +124,18 @@ class YoutubeCogs(commands.Cog):
     async def on_message(self, msg):
         if msg.author == self.bot.user:
             return
+        
+        if msg.content.startswith("https://www.youtube.com/watch?v="):
+            try:
+                video_id = msg.content[len("https://www.youtube.com/watch?v="):]
+                await msg.delete()
+                channel = msg.channel
+                await channel.send(
+                    content=f"You shared: {videoId_to_url(video_id)}",
+                    view=VideoView(video_id=video_id, no_db_log=True)
+                )
+            except Exception as e:
+                unexpected_error_handler(self.logger, e, msg=msg.content)
 
         if msg.content.startswith("https://youtu.be/"):
             try:

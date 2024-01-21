@@ -33,28 +33,34 @@ async def random_video(playlists: list = None) -> dict[str, str]:
             else:
                 random_playlist = random.choice(playlists)
             video_id = await random_videoId_from_playlistId(playlistId=random_playlist["_id"])
+            
+            # Check if video is already in the database
             video = get_video_by_id(video_id)
+            if video:
+                logger.info(f"Video already in database: {video}")
+                continue
+
+
             response = youtube_utils.request_video_by_id(video_id)
+            
+            # If video is private
             if not response:
-                response = youtube_utils.request_video_by_id(video_id)
-                add_video({
+                add_video(
                     {
                         "_id": video_id,
                         "playlist": random_playlist["_id"],
                         "private": True
-                    }
-                })
-                logger.info(f"Private video: {video_id}")
+                    })
+                logger.warning(f"Private video: {video_id}")
             else:
                 video = {
                     "_id": video_id,
                     "title": response["snippet"]["title"],
                     "duration": response["contentDetails"]["duration"],
-                    "watch": 0,
-                    "last_watch": None,
                     "playlist": random_playlist["_id"],
                 }
                 add_video(video)
+                logger.info(f"Added video: {video}")
         return video
     except Exception as e:
         unexpected_error_handler(logger, e, video=video, random_playlist=random_playlist["title"], video_id=video_id, response=response)
@@ -76,6 +82,7 @@ async def random_videoId_from_playlistId(playlistId: str) -> str:
             item_count = response["items"][0]["contentDetails"]["itemCount"]
 
         random_index: int = random.randint(0, item_count - 1)
+
         page_token: str = ''
         for _ in range((random_index // 50) + 1):
             response = await request_videos_by_playlistId(playlistId, page_token=page_token)

@@ -35,7 +35,7 @@ def get_playlists(collection: pymongo.collection.Collection, start_title: str = 
 @query(db="french", collection="playlists")
 def get_random_playlist(collection: pymongo.collection.Collection) -> dict[str, str]:
     try:
-        return collection.aggregate([{ "$match":{"random": True} },{"$sample": {"size": 1}}]).next()
+        return collection.aggregate([{"$sample": {"size": 1}}]).next()
     except Exception as e:
         unexpected_error_handler(logger, e)
 
