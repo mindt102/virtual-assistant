@@ -6,7 +6,7 @@ from queries.youtube_queries import get_channels
 from utils.logging_utils import setup_logger, unexpected_error_handler
 from google_auth_creds import get_googleapi_credentials
 from googleapiclient.discovery import build
-from utils.youtube_utils import channelId_to_url, resubscribe, videoId_to_url
+from utils.youtube_utils import channelId_to_url, find_missing_videos, resubscribe, videoId_to_url
 from views.youtube.SubConfirmView import SubConfirmView
 from views.youtube.VideoView import VideoView
 from views.youtube.YoutubeChannelsView import YoutubeChannelsView
@@ -114,7 +114,7 @@ class YoutubeCogs(commands.Cog):
         try:
             self.logger.info("Finding missing videos...")
             await ctx.send("Finding missing videos...", ephemeral=True, delete_after=FEEDBACK_TIMEOUT)
-
+            find_missing_videos()
             await ctx.send("Finished finding missing videos", ephemeral=True, delete_after=FEEDBACK_TIMEOUT)
         except Exception as e:
             await ctx.send("Server error", delete_after=FEEDBACK_TIMEOUT, ephemeral=True)
