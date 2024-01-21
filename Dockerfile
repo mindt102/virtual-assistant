@@ -15,7 +15,7 @@ ARG USER
 RUN groupadd -g ${PGID} ${USER} && useradd -m -u ${PUID} -g ${PGID} ${USER} -s /bin/sh && su ${USER}
 
 COPY . .
-RUN chmod +x ./launch.sh
+# RUN chmod +x ./launch.sh
 
 # If launch.sh does not exists, use CMD python3 ./main.py
 # CMD ./launch.sh 
