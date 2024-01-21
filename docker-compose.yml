@@ -2,13 +2,12 @@ version: "3.7"
 
 services:
   reverse_proxy:
-    image: nginx:latest
+    image: ./proxy.Dockerfile
     container_name: reverse_proxy
     ports:
       - "80:80"
     volumes:
       - ./secrets/nginx/conf.d:/etc/nginx/conf.d
-      - ./secrets/nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./logs/nginx:/var/log/nginx
   bioz:
     container_name: bioz
