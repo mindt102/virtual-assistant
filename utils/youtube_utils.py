@@ -9,6 +9,7 @@ from queries.youtube_queries import add_channel, add_video, get_channel_by_id, g
 from utils.logging_utils import setup_logger, unexpected_error_handler
 from google_auth_creds import get_googleapi_credentials
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
 from views.youtube.VideoView import VideoView
 from datetime import datetime, timedelta, timezone
