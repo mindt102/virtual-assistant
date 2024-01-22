@@ -27,7 +27,6 @@ class FrenchView(view.View):
             await interaction.followup.send(
                 content=f"More French ({youtube_utils.duration_to_str(video['duration'])}): {youtube_utils.videoId_to_url(video['_id'])}",
                 view=FrenchView(video_id=video["_id"]),
-                ephemeral=True,
                 wait=True
             )
         except Exception as e:

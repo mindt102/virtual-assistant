@@ -35,7 +35,7 @@ class FrenchCogs(commands.Cog):
     )
     async def random(self, ctx: commands.Context = None):
         try:
-            await ctx.defer(ephemeral=True)
+            await ctx.defer()
             video = await french_utils.random_video()
             if not ctx:
                 channel = discord.utils.get(
