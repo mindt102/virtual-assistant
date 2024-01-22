@@ -41,6 +41,21 @@ class UtilsCogs(commands.Cog):
             except AttributeError as e:
                 his_len = 0
 
+    @ tasks.loop(seconds=1)
+    async def queue_check(self):
+        if not BOT_QUEUE.empty():
+            msg = BOT_QUEUE.get()
+            try:
+                channel = discord.utils.get(
+                    self.bot.get_all_channels(),
+                    guild__name='Bot',
+                    name=msg["type"]
+                )
+                await self.queue_handlers[msg["type"]](channel, msg["data"])
+            except Exception as e:
+                unexpected_error_handler(self.logger, e)
+                raise e
+
     @ tasks.loop(hours=1)
     async def webhook_check(self):
         channel = discord.utils.get(
