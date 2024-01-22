@@ -6,6 +6,7 @@ from queries.youtube_queries import get_channels
 from utils.logging_utils import setup_logger, unexpected_error_handler
 from google_auth_creds import get_googleapi_credentials
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from utils.youtube_utils import channelId_to_url, find_missing_videos, resubscribe, videoId_to_url
 from views.youtube.SubConfirmView import SubConfirmView
 from views.youtube.VideoView import VideoView
@@ -116,6 +117,9 @@ class YoutubeCogs(commands.Cog):
             await ctx.send("Finding missing videos...", ephemeral=True, delete_after=FEEDBACK_TIMEOUT)
             await find_missing_videos()
             await ctx.send("Finished finding missing videos", ephemeral=True, delete_after=FEEDBACK_TIMEOUT)
+        except HttpError as e:
+            await ctx.send("Possible quota exceeded", delete_after=FEEDBACK_TIMEOUT, ephemeral=True)
+            unexpected_error_handler(self.logger, e)
         except Exception as e:
             await ctx.send("Server error", delete_after=FEEDBACK_TIMEOUT, ephemeral=True)
             unexpected_error_handler(self.logger, e)
