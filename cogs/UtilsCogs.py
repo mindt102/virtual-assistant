@@ -41,46 +41,6 @@ class UtilsCogs(commands.Cog):
             except AttributeError as e:
                 his_len = 0
 
-    # @commands.hybrid_command(
-    #     description="Send a random video from Easy French",
-    #     brief="Send a random video from Easy French"
-    # )
-    # async def ezfrench(self, ctx: commands.Context = None):
-    #     video_id = await french_utils.random_videoId_from_playlistId(playlistId=EASYFRENCH_PLAYLISTID)
-
-    #     if not ctx:
-    #         channel = discord.utils.get(
-    #             self.bot.get_all_channels(),
-    #             guild__name='Bot',
-    #             name='french'
-    #         )
-    #     else:
-    #         channel = ctx.channel
-
-    #     await channel.send(
-    #         content=f"Time to learn French: {youtube_utils.videoId_to_url(video_id)}",
-    #         view=VideoView(video_id=video_id, no_db_log=True)
-    #     )
-
-    @tasks.loop(time=datetime.time(0, 0, 0))
-    async def daily_ezfrench(self):
-        await self.ezfrench(None)
-
-    @ tasks.loop(seconds=1)
-    async def queue_check(self):
-        if not BOT_QUEUE.empty():
-            msg = BOT_QUEUE.get()
-            try:
-                channel = discord.utils.get(
-                    self.bot.get_all_channels(),
-                    guild__name='Bot',
-                    name=msg["type"]
-                )
-                await self.queue_handlers[msg["type"]](channel, msg["data"])
-            except Exception as e:
-                unexpected_error_handler(self.logger, e)
-                raise e
-
     @ tasks.loop(hours=1)
     async def webhook_check(self):
         channel = discord.utils.get(
@@ -108,8 +68,6 @@ class UtilsCogs(commands.Cog):
     async def on_ready(self):
         self.queue_check.start()
         self.webhook_check.start()
-        self.daily_ezfrench.start()
-
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(UtilsCogs(bot))
