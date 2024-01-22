@@ -22,7 +22,7 @@ class FrenchView(view.View):
     @button(label="Next", style=discord.ButtonStyle.primary)
     async def nextvid(self, interaction: discord.Interaction, button: discord.ui.Button):
         try:
-            await interaction.response.defer(thinking=True, ephemeral=True)
+            await interaction.response.defer(thinking=True)
             video = await french_utils.random_video()
             await interaction.followup.send(
                 content=f"More French ({youtube_utils.duration_to_str(video['duration'])}): {youtube_utils.videoId_to_url(video['_id'])}",
