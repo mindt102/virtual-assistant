@@ -15,6 +15,7 @@ class FrenchCogs(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.logger = setup_logger(__name__)
+        self.daily_french.start()
 
 
     @commands.hybrid_group(
