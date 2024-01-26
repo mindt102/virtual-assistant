@@ -36,16 +36,16 @@ class FrenchCogs(commands.Cog):
     )
     async def random(self, ctx: commands.Context = None):
         try:
-            await ctx.defer()
-            video = await french_utils.random_video()
-            if not ctx:
+            if ctx:
+                await ctx.defer()
+                channel = ctx
+            else:
                 channel = discord.utils.get(
                     self.bot.get_all_channels(),
                     guild__name='Bot',
                     name='french'
                 )
-            else:
-                channel = ctx
+            video = await french_utils.random_video()
 
             await channel.send(
                 content=f"Daily French ({youtube_utils.duration_to_str(video['duration'])}): {youtube_utils.videoId_to_url(video['_id'])}",
