@@ -7,7 +7,7 @@ from utils.logging_utils import setup_logger, unexpected_error_handler
 from google_auth_creds import get_googleapi_credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from utils.youtube_utils import channelId_to_url, find_missing_videos, request_video_by_id, resubscribe, videoId_to_url
+from utils.youtube_utils import channelId_to_url, duration_to_str, find_missing_videos, request_video_by_id, resubscribe, videoId_to_url
 from views.youtube.SubConfirmView import SubConfirmView
 from views.youtube.VideoView import VideoView
 from views.youtube.YoutubeChannelsView import YoutubeChannelsView
@@ -144,22 +144,35 @@ class YoutubeCogs(commands.Cog):
             return
         
         try:
-            if msg.content.startswith("https://www.youtube.com/watch?v="):
-                video_id = msg.content[len("https://www.youtube.com/watch?v="):]
-            elif msg.content.startswith("https://youtu.be/"):
-                video_id = msg.content[len("https://youtu.be/"):]
-            else:
-                return
-            await msg.delete()
-            response = request_video_by_id(video_id=video_id)
-            if not response:
-                return None
-            duration = response["contentDetails"]["duration"]
-            channel = msg.channel
-            await channel.send(
-                content=f"You shared {duration}: {videoId_to_url(video_id)}",
-                view=VideoView(video_id=video_id, no_db_log=True)
-            )
+            index = msg.content.find("&")
+            matching_urls = [
+                "https://www.youtube.com/watch?v=",
+                "https://youtu.be/"
+            ]
+
+            for url in matching_urls:
+                if msg.content.startswith(url):
+                    # Find index of the first ampersand
+                    ampersand_index = msg.content.find("&")
+                    if index != -1:
+                        video_id = msg.content[len(url):ampersand_index]
+                    else:
+                        video_id = msg.content[len(url):]
+
+                    await msg.delete()
+                    response = request_video_by_id(video_id=video_id)
+                    if not response:
+                        channel.send("Cannot get duration", ephemeral=True)
+                        duration = "()"
+                    duration = response["contentDetails"]["duration"]
+                    channel = msg.channel
+                    await channel.send(
+                        content=f"You shared {duration_to_str(duration)}: {videoId_to_url(video_id)}",
+                        view=VideoView(video_id=video_id, no_db_log=True)
+                    )
+
+                    break
+
         except Exception as e:
             unexpected_error_handler(self.logger, e, msg=msg.content)
 
