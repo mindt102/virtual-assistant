@@ -7,7 +7,7 @@ from utils.logging_utils import setup_logger, unexpected_error_handler
 from google_auth_creds import get_googleapi_credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from utils.youtube_utils import channelId_to_url, find_missing_videos, resubscribe, videoId_to_url
+from utils.youtube_utils import channelId_to_url, find_missing_videos, request_video_by_id, resubscribe, videoId_to_url
 from views.youtube.SubConfirmView import SubConfirmView
 from views.youtube.VideoView import VideoView
 from views.youtube.YoutubeChannelsView import YoutubeChannelsView
@@ -143,29 +143,25 @@ class YoutubeCogs(commands.Cog):
         if msg.author == self.bot.user:
             return
         
-        if msg.content.startswith("https://www.youtube.com/watch?v="):
-            try:
+        try:
+            if msg.content.startswith("https://www.youtube.com/watch?v="):
                 video_id = msg.content[len("https://www.youtube.com/watch?v="):]
-                await msg.delete()
-                channel = msg.channel
-                await channel.send(
-                    content=f"You shared: {videoId_to_url(video_id)}",
-                    view=VideoView(video_id=video_id, no_db_log=True)
-                )
-            except Exception as e:
-                unexpected_error_handler(self.logger, e, msg=msg.content)
-
-        if msg.content.startswith("https://youtu.be/"):
-            try:
+            elif msg.content.startswith("https://youtu.be/"):
                 video_id = msg.content[len("https://youtu.be/"):]
-                await msg.delete()
-                channel = msg.channel
-                await channel.send(
-                    content=f"You shared: {videoId_to_url(video_id)}",
-                    view=VideoView(video_id=video_id, no_db_log=True)
-                )
-            except Exception as e:
-                unexpected_error_handler(self.logger, e, msg=msg.content)
+            else:
+                return
+            await msg.delete()
+            response = request_video_by_id(video_id=video_id)
+            if not response:
+                return None
+            duration = response["contentDetails"]["duration"]
+            channel = msg.channel
+            await channel.send(
+                content=f"You shared {duration}: {videoId_to_url(video_id)}",
+                view=VideoView(video_id=video_id, no_db_log=True)
+            )
+        except Exception as e:
+            unexpected_error_handler(self.logger, e, msg=msg.content)
 
     @ tasks.loop(time=datetime.time(hour=0, minute=0, second=0))
     async def resub_loop(self):
