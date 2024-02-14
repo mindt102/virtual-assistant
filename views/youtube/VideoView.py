@@ -27,8 +27,14 @@ class PauseTimeModal(Modal):
         else:
             await interaction.response.send_message("Invalid timestamp", ephemeral=True, delete_after=FEEDBACK_TIMEOUT)
             return
-
-        await interaction.response.edit_message(content=f"https://www.youtube.com/watch?v={self.view.video_id}&t={seconds}", view=self.view)
+        # Extract the duration located inside parentheses from the message
+        message = interaction.message.content
+        start = message.find("(")
+        end = message.find(")")
+        duration = ""
+        if start != -1 and end != -1:
+            duration = message[start+1:end]
+        await interaction.response.edit_message(content=duration + f"https://www.youtube.com/watch?v={self.view.video_id}&t={seconds}", view=self.view)
 
 
 class VideoView(view.View):
