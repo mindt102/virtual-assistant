@@ -115,7 +115,7 @@ def duration_to_str(duration: str) -> str:
     if "M" not in duration and "H" not in duration:
         duration = duration.replace("S", "s")
     duration = duration.replace("H", ":").replace("M", ":").replace("S", "")
-    return duration
+    return f"[{duration}]"
 
 
 async def queue_handler(channel: discord.TextChannel, video: dict):
@@ -127,7 +127,7 @@ async def queue_handler(channel: discord.TextChannel, video: dict):
 
             duration: str = duration_to_str(video["duration"])
             await channel.send(
-                content=f"New video ({duration}): {videoId_to_url(video['_id'])}",
+                content=f"New video {duration}: {videoId_to_url(video['_id'])}",
                 view=VideoView(
                     video["_id"], no_db_log=video["channelId"] == DEBUG_CHANNEL)
             )

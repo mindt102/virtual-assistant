@@ -25,7 +25,7 @@ class FrenchView(view.View):
             await interaction.response.defer(thinking=True)
             video = await french_utils.random_video()
             await interaction.followup.send(
-                content=f"More French ({youtube_utils.duration_to_str(video['duration'])}): {youtube_utils.videoId_to_url(video['_id'])}",
+                content=f"More French {youtube_utils.duration_to_str(video['duration'])}: {youtube_utils.videoId_to_url(video['_id'])}",
                 view=FrenchView(video_id=video["_id"]),
                 wait=True
             )

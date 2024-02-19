@@ -29,11 +29,11 @@ class PauseTimeModal(Modal):
             return
         # Extract the duration located inside parentheses from the message
         message = interaction.message.content
-        start = message.find("(")
-        end = message.find(")")
-        duration = ""
+        start = message.find("[")
+        end = message.find("]")
+        duration = "[]"
         if start != -1 and end != -1:
-            duration = message[start+1:end]
+            duration = message[start:end+1]
         await interaction.response.edit_message(content=duration + f"https://www.youtube.com/watch?v={self.view.video_id}&t={seconds}", view=self.view)
 
 

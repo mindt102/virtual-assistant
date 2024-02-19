@@ -48,7 +48,7 @@ class FrenchCogs(commands.Cog):
             video = await french_utils.random_video()
 
             await channel.send(
-                content=f"Daily French ({youtube_utils.duration_to_str(video['duration'])}): {youtube_utils.videoId_to_url(video['_id'])}",
+                content=f"Daily French {youtube_utils.duration_to_str(video['duration'])}: {youtube_utils.videoId_to_url(video['_id'])}",
                 view=FrenchView(video_id=video["_id"])
             )
         except Exception as e:

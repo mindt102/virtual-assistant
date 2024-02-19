@@ -158,14 +158,15 @@ class YoutubeCogs(commands.Cog):
                         video_id = msg.content[len(url):ampersand_index]
                     else:
                         video_id = msg.content[len(url):]
-
+                    self.logger.info(f"Sharing video id: {video_id}")
                     await msg.delete()
+                    channel = msg.channel
+                    
                     response = request_video_by_id(video_id=video_id)
                     if not response:
                         channel.send("Cannot get duration", ephemeral=True)
-                        duration = "()"
+                        duration = "[]"
                     duration = response["contentDetails"]["duration"]
-                    channel = msg.channel
                     await channel.send(
                         content=f"You shared {duration_to_str(duration)}: {videoId_to_url(video_id)}",
                         view=VideoView(video_id=video_id, no_db_log=True)
