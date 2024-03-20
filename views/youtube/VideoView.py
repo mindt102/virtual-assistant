@@ -17,6 +17,7 @@ class PauseTimeModal(Modal):
 
     async def on_submit(self, interaction: discord.Interaction):
         # Convert timestamp to seconds
+        timestamp_str = self.timestamp.value
         timestamp = self.timestamp.value.split(":")
         if len(timestamp) == 3:
             seconds = int(timestamp[0])*3600 + int(timestamp[1])*60 + int(timestamp[2])
@@ -34,7 +35,7 @@ class PauseTimeModal(Modal):
         duration = "[]"
         if start != -1 and end != -1:
             duration = message[start:end+1]
-        await interaction.response.edit_message(content=f"[{timestamp}]/{duration} https://www.youtube.com/watch?v={self.view.video_id}&t={seconds}", view=self.view)
+        await interaction.response.edit_message(content=f"[{timestamp_str}]/{duration} https://www.youtube.com/watch?v={self.view.video_id}&t={seconds}", view=self.view)
 
 
 class VideoView(view.View):
